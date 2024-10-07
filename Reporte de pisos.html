@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estatus de Pisos Local 4</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .aula {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .botonAula {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+        .enClases {
+            background-color: #4CAF50; /* Verde */
+            color: white;
+        }
+        .cerrado {
+            background-color: #f44336; /* Rojo */
+            color: white;
+        }
+        .enExamen {
+            background-color: #2196F3; /* Azul */
+            color: white;
+        }
+        .limpiezaProfunda {
+            background-color: #FFEB3B; /* Amarillo */
+            color: black;
+        }
+        .abierto {
+            background-color: #32CD32; /* Verde brillante */
+            color: white;
+        }
+        .comentario {
+            margin-left: 10px;
+            padding: 5px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #botonReporte {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #2196F3; /* Azul */
+            color: white;
+        }
+        #reporteContainer {
+            display: none;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #whatsappButton {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #25D366; /* Verde WhatsApp */
+            color: white;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Estatus de Pisos Local 4</h1>
+
+<div id="aulasContainer">
+    <!-- Las aulas se generarán aquí -->
+</div>
+
+<button id="botonReporte" onclick="generarReporte()">Generar Reporte</button>
+
+<div id="reporteContainer">
+    <h2>Reporte de Estatus</h2>
+    <pre id="reporte"></pre>
+    <button id="whatsappButton" onclick="enviarWhatsApp()">Enviar a WhatsApp</button>
+</div>
+
+<script>
+    const aulas = [
+        "A201", "A202", "A301", "A302", "A303",
+        "A401", "A402", "A403", "A501", "A502",
+        "A503", "A601", "A602", "A603", "A701",
+        "A702", "A703", "A801", "A802", "A803",
+        "A804", "A901", "A902", "A903", "A1001",
+        "A1002", "A1003"
+    ];
+    const estados = Array(aulas.length).fill(0); // 0: Cerrado, 1: En clases, 2: En examen, 3: Limpieza profunda, 4: Abierto
+
+    function cambiarEstado(index) {
+        estados[index] = (estados[index] + 1) % 5; // Cambia el estado en ciclo, ahora con 5 estados
+
+        const boton = document.getElementById(`boton-${index}`);
+        boton.className = 'botonAula'; // Reiniciar clases CSS
+        boton.classList.remove('cerrado', 'enClases', 'enExamen', 'limpiezaProfunda', 'abierto');
+
+        switch (estados[index]) {
+            case 0:
+                boton.textContent = 'Cerrado';
+                boton.classList.add('cerrado');
+                break;
+            case 1:
+                boton.textContent = 'En clases';
+                boton.classList.add('enClases');
+                break;
+            case 2:
+                boton.textContent = 'En examen';
+                boton.classList.add('enExamen');
+                break;
+            case 3:
+                boton.textContent = 'Limpieza profunda';
+                boton.classList.add('limpiezaProfunda');
+                break;
+            case 4:
+                boton.textContent = 'Abierto';
+                boton.classList.add('abierto');
+                break;
+        }
+    }
+
+    function generarReporte() {
+        let reporte = "Estatus de Pisos Local 4\n\n";
+        aulas.forEach((aula, index) => {
+            const estado = estados[index] === 1 ? "✅ En clases" : 
+                           estados[index] === 2 ? "✅ En examen" : 
+                           estados[index] === 3 ? "⚠️ Limpieza profunda" : 
+                           estados[index] === 4 ? "✅ Abierto" : 
+                           "❌ Cerrado";
+            const comentario = document.querySelector(`#comentario-${index}`).value;
+            reporte += `${aula}: ${estado}${comentario ? ' - ' + comentario : ''}\n`;
+        });
+        
+        document.getElementById("reporte").textContent = reporte;
+        document.getElementById("reporteContainer").style.display = 'block';
+        document.getElementById("whatsappButton").style.display = 'block'; // Mostrar botón de WhatsApp
+    }
+
+    function enviarWhatsApp() {
+        const reporte = document.getElementById("reporte").textContent;
+        const mensaje = encodeURIComponent(reporte);
+        const url = `https://api.whatsapp.com/send?text=${mensaje}`;
+        window.open(url, '_blank'); // Abrir WhatsApp
+    }
+
+    const aulasContainer = document.getElementById('aulasContainer');
+    aulas.forEach((aula, index) => {
+        const aulaDiv = document.createElement('div');
+        aulaDiv.className = 'aula';
+        aulaDiv.innerHTML = `
+            <span>${aula}: </span>
+            <button id="boton-${index}" class="cerrado botonAula" onclick="cambiarEstado(${index})">Cerrado</button>
+            <input type="text" class="comentario" id="comentario-${index}" placeholder="Comentario" />
+        `;
+        aulasContainer.appendChild(aulaDiv);
+    });
+</script>
+
+</body>
+</html>
